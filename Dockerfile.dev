@@ -1,0 +1,5 @@
+FROM golang:1.12.8-alpine
+
+WORKDIR /app
+
+RUN apk add git gcc musl-dev;

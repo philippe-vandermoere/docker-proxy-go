@@ -1,0 +1,86 @@
+version: '2.1'
+commands:
+    docker_login:
+        description: Authenticate to docker registry
+        parameters:
+            docker_registry:
+                type: string
+                default: docker.io
+            docker_login:
+                type: string
+            docker_password:
+                type: string
+        steps:
+            - run:
+                name: Authenticate to docker registry << parameters.docker_registry >>
+                command: echo << parameters.docker_password >> | docker login -u << parameters.docker_login >> --password-stdin << parameters.docker_registry >>
+
+jobs:
+    lint:
+        docker:
+            - image: golang:1.12.8-alpine
+        working_directory: ~/repo
+        steps:
+            - run:
+                name: Install requirements
+                command: apk add git openssh-client
+            - checkout
+            - run:
+                name: Lint
+                command: gofmt -d -e -s .
+
+    test:
+        docker:
+            - image: golang:1.12.8-alpine
+        working_directory: ~/repo
+        steps:
+            - run:
+                name: Install requirements
+                command: apk add git openssh-client gcc musl-dev
+            - checkout
+            -   run:
+                  name: Download modules
+                  command: go mod download
+            - run:
+                name: Test
+                command: go test
+
+    docker_build:
+        docker:
+            - image: docker:18.09.7-git
+        working_directory: ~/repo
+        steps:
+            - setup_remote_docker
+            - checkout
+            - docker_login:
+                docker_login: ${DOCKERHUB_LOGIN}
+                docker_password: ${DOCKERHUB_PASSWORD}
+            - run:
+                name: "Build docker image"
+                command: |
+                    if [[ ! -z ${CIRCLE_TAG} ]]; then \
+                        version=${CIRCLE_TAG}; \
+                    else \
+                        version=latest; \
+                    fi
+
+                    docker_tag=${DOCKER_REPOSITORY}:${version}
+
+                    docker build . -t ${docker_tag}
+                    docker push ${docker_tag}
+
+workflows:
+    version: '2.1'
+    tests:
+        jobs:
+            - lint
+            - test
+
+    dockerhub:
+        jobs:
+            - docker_build:
+                filters:
+                    tags:
+                        only: /^[0-9]+.[0-9]+.[0-9]+$/
+                    branches:
+                        only: master

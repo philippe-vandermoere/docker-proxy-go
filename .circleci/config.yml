@@ -14,7 +14,7 @@ jobs:
             - checkout
             - run:
                 name: Lint
-                command: gofmt -d -e -s .
+                command: bin/lint
 
     test:
         executor: golang
@@ -24,12 +24,17 @@ jobs:
                 name: Install requirements
                 command: apk add git openssh-client gcc musl-dev
             - checkout
-            -   run:
-                  name: Download modules
-                  command: go mod download
+            - run:
+                name: Download modules
+                command: go mod download
             - run:
                 name: Test
-                command: go test
+                command: bin/test
+            - run:
+                name: push code coverage report to codecov
+                command: |
+                    apk add bash curl
+                    curl -s https://codecov.io/bash | bash
 
     dockerhub:
         docker:

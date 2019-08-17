@@ -15,11 +15,11 @@ docker-compose run golang go run main.go
 ### Lint
 
 ```bash
-docker-compose run golang gofmt -d -e -s .
+docker-compose run golang bin/lint
 ```
 
 ### Test
 
 ```bash
-docker-compose run golang go test
+docker-compose run golang bin/test
 ```

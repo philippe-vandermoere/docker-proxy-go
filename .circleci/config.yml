@@ -1,24 +1,11 @@
 version: '2.1'
-commands:
-    docker_login:
-        description: Authenticate to docker registry
-        parameters:
-            docker_registry:
-                type: string
-                default: docker.io
-            docker_login:
-                type: string
-            docker_password:
-                type: string
-        steps:
-            - run:
-                name: Authenticate to docker registry << parameters.docker_registry >>
-                command: echo << parameters.docker_password >> | docker login -u << parameters.docker_login >> --password-stdin << parameters.docker_registry >>
-
+executors:
+    golang:
+        docker:
+            - image: golang:1.12.9-alpine
 jobs:
     lint:
-        docker:
-            - image: golang:1.12.8-alpine
+        executor: golang
         working_directory: ~/repo
         steps:
             - run:
@@ -30,8 +17,7 @@ jobs:
                 command: gofmt -d -e -s .
 
     test:
-        docker:
-            - image: golang:1.12.8-alpine
+        executor: golang
         working_directory: ~/repo
         steps:
             - run:
@@ -45,29 +31,28 @@ jobs:
                 name: Test
                 command: go test
 
-    docker_build:
+    dockerhub:
         docker:
             - image: docker:18.09.7-git
         working_directory: ~/repo
         steps:
             - setup_remote_docker
             - checkout
-            - docker_login:
-                docker_login: ${DOCKERHUB_LOGIN}
-                docker_password: ${DOCKERHUB_PASSWORD}
             - run:
-                name: "Build docker image"
-                command: |
-                    if [[ ! -z ${CIRCLE_TAG} ]]; then \
-                        version=${CIRCLE_TAG}; \
-                    else \
-                        version=latest; \
-                    fi
+                  name: Authenticate to dockerhub
+                  command: echo ${DOCKERHUB_PASSWORD} | docker login -u ${DOCKERHUB_LOGIN} --password-stdin
+            - run:
+                  name: Build and push docker image
+                  command: |
+                      version=latest
+                      if [[ ! -z ${CIRCLE_TAG} ]]; then \
+                          version=${CIRCLE_TAG}; \
+                      fi
 
-                    docker_tag=${DOCKER_REPOSITORY}:${version}
+                      docker_tag=${DOCKERHUB_ORGANIZATION}/${CIRCLE_PROJECT_REPONAME}:${version}
 
-                    docker build . -t ${docker_tag}
-                    docker push ${docker_tag}
+                      docker build . -t ${docker_tag}
+                      docker push ${docker_tag}
 
 workflows:
     version: '2.1'
@@ -78,9 +63,10 @@ workflows:
 
     dockerhub:
         jobs:
-            - docker_build:
-                filters:
-                    tags:
-                        only: /^[0-9]+.[0-9]+.[0-9]+$/
-                    branches:
-                        only: master
+            - dockerhub:
+                  context: global
+                  filters:
+                      tags:
+                          only: /^[0-9]+.[0-9]+.[0-9]+$/
+                      branches:
+                          only: master

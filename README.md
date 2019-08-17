@@ -1,4 +1,4 @@
-# docker-proxy-go
+# Docker-proxy go
 
 Go implementation of [docker-proxy](https://github.com/philippe-vandermoere/docker-proxy).
 

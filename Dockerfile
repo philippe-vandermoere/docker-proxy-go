@@ -1,4 +1,4 @@
-FROM golang:1.12.8-alpine as build
+FROM golang:1.12.9-alpine as build
 
 COPY . /app
 
@@ -8,11 +8,12 @@ RUN set -xe; \
     apk add git; \
     go build -o /go/bin/docker-proxy-go;
 
-FROM golang:1.12.8-alpine
+FROM alpine:3.10
+
+RUN apk add --no-cache ca-certificates
 
 WORKDIR /app
 
 COPY --from=build /go/bin/docker-proxy-go bin/docker-proxy-go
-COPY ./template ./template
 
 CMD bin/docker-proxy-go

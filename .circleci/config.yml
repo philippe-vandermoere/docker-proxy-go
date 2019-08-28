@@ -3,6 +3,7 @@ executors:
     golang:
         docker:
             - image: golang:1.12.9-alpine
+
 jobs:
     lint:
         executor: golang
@@ -44,20 +45,20 @@ jobs:
             - setup_remote_docker
             - checkout
             - run:
-                  name: Authenticate to dockerhub
-                  command: echo ${DOCKERHUB_PASSWORD} | docker login -u ${DOCKERHUB_LOGIN} --password-stdin
+                name: Authenticate to dockerhub
+                command: echo ${DOCKERHUB_PASSWORD} | docker login -u ${DOCKERHUB_LOGIN} --password-stdin
             - run:
-                  name: Build and push docker image
-                  command: |
-                      version=latest
-                      if [[ ! -z ${CIRCLE_TAG} ]]; then \
-                          version=${CIRCLE_TAG}; \
-                      fi
+                name: Build and push docker image
+                command: |
+                    version=latest
+                    if [[ ! -z ${CIRCLE_TAG} ]]; then \
+                        version=${CIRCLE_TAG}; \
+                    fi
 
-                      docker_tag=${DOCKERHUB_ORGANIZATION}/${CIRCLE_PROJECT_REPONAME}:${version}
+                    docker_tag=${DOCKERHUB_ORGANIZATION}/${CIRCLE_PROJECT_REPONAME}:${version}
 
-                      docker build . -t ${docker_tag}
-                      docker push ${docker_tag}
+                    docker build . -t ${docker_tag}
+                    docker push ${docker_tag}
 
 workflows:
     version: '2.1'
@@ -69,9 +70,9 @@ workflows:
     dockerhub:
         jobs:
             - dockerhub:
-                  context: global
-                  filters:
-                      tags:
-                          only: /^[0-9]+.[0-9]+.[0-9]+$/
-                      branches:
-                          only: master
+                context: global
+                filters:
+                    tags:
+                        only: /^[0-9]+.[0-9]+.[0-9]+$/
+                    branches:
+                        only: master

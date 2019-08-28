@@ -3,7 +3,7 @@ package typeProxy
 import (
 	"errors"
 	"github.com/philippe-vandermoere/docker-proxy-go/types/certificate"
-	"github.com/philippe-vandermoere/docker-proxy-go/types/server"
+	typeServer "github.com/philippe-vandermoere/docker-proxy-go/types/server"
 	"gopkg.in/go-playground/validator.v9"
 	"os"
 	"strings"

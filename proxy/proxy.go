@@ -8,7 +8,7 @@ import (
 	"github.com/philippe-vandermoere/docker-proxy-go/nginx"
 	"github.com/philippe-vandermoere/docker-proxy-go/types/certificate"
 	"github.com/philippe-vandermoere/docker-proxy-go/types/proxy"
-	"github.com/philippe-vandermoere/docker-proxy-go/types/server"
+	typeServer "github.com/philippe-vandermoere/docker-proxy-go/types/server"
 	log "github.com/sirupsen/logrus"
 	"regexp"
 	"strconv"

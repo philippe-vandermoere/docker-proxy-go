@@ -49,7 +49,7 @@ func (github Github) Validate() error {
 	return nil
 }
 
-func (github Github) CreateCertificate(certificate typeCertificate.Certificate) error {
+func (github Github) CreateCertificate(certificate *typeCertificate.Certificate) error {
 	err := github.Validate()
 	if err != nil {
 		return err

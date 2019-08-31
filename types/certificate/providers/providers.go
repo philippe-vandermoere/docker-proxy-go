@@ -7,7 +7,7 @@ import (
 )
 
 type Provider interface {
-	CreateCertificate(certificate typeCertificate.Certificate) error
+	CreateCertificate(certificate *typeCertificate.Certificate) error
 	GetName() string
 }
 

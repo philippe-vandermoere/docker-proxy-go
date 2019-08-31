@@ -2,7 +2,7 @@ package nginx
 
 import (
 	"github.com/philippe-vandermoere/docker-proxy-go/templates"
-	"github.com/philippe-vandermoere/docker-proxy-go/types/proxy"
+	typeProxy "github.com/philippe-vandermoere/docker-proxy-go/types/proxy"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"

@@ -19,7 +19,7 @@ func New() SelfSigned {
 	return SelfSigned{}
 }
 
-func (selfSigned SelfSigned) CreateCertificate(certificate typeCertificate.Certificate) error {
+func (selfSigned SelfSigned) CreateCertificate(certificate *typeCertificate.Certificate) error {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
 		return err

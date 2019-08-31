@@ -6,10 +6,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func GetCertificate(domain string, options map[string]string) (typeCertificate.Certificate, error) {
+func GetCertificate(domain string, options map[string]string) (*typeCertificate.Certificate, error) {
 	certificate, err := typeCertificate.New(domain)
 	if err != nil {
-		return typeCertificate.Certificate{}, err
+		return nil, err
 	}
 
 	if err = certificate.IsValid(); err == nil {
@@ -21,12 +21,12 @@ func GetCertificate(domain string, options map[string]string) (typeCertificate.C
 	err = provider.CreateCertificate(certificate)
 	if err != nil {
 		log.Error("Unable to created certificate for domain '"+certificate.Domain+"'.\nerror: ", err)
-		return typeCertificate.Certificate{}, err
+		return nil, err
 	}
 
 	if err = certificate.IsValid(); err != nil {
 		log.Error("The created certificate is not valid for domain '"+certificate.Domain+"'.\nerror:", err)
-		return typeCertificate.Certificate{}, nil
+		return nil, err
 	}
 
 	log.Info("Created certificate for domain '" + certificate.Domain + "' with provider '" + provider.GetName() + "'.")

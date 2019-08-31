@@ -2,14 +2,15 @@ package server
 
 import (
 	"github.com/Pallinder/go-randomdata"
+	"github.com/icrowley/fake"
 	"strconv"
 	"testing"
 )
 
 func TestNew(t *testing.T) {
-	name := randomdata.Alphanumeric(10)
-	ip := randomdata.IpV4Address()
-	port := randomdata.Number(1, 65536)
+	name := randomdata.Alphanumeric(randomdata.Number(1, 255))
+	ip := fake.IPv4()
+	port := randomdata.Number(1, 65535)
 	server, err := New(name, ip, port)
 	if err != nil {
 		t.Error(err)
@@ -22,14 +23,14 @@ func TestNew(t *testing.T) {
 
 func TestNewBadName(t *testing.T) {
 	name := randomdata.Alphanumeric(0)
-	ip := randomdata.IpV4Address()
-	port := randomdata.Number(1, 65536)
+	ip := fake.IPv4()
+	port := randomdata.Number(1, 65535)
 	server, err := New(name, ip, port)
 	if err == nil {
-		t.Error(err)
+		t.FailNow()
 	}
 
-	if server != (Server{}) {
+	if server != nil {
 		t.Fail()
 	}
 
@@ -39,15 +40,15 @@ func TestNewBadName(t *testing.T) {
 }
 
 func TestNewBadIp(t *testing.T) {
-	name := randomdata.Alphanumeric(10)
+	name := randomdata.Alphanumeric(randomdata.Number(1, 255))
 	ip := "1.1.1.1.1"
-	port := randomdata.Number(1, 65536)
+	port := randomdata.Number(1, 65535)
 	server, err := New(name, ip, port)
 	if err == nil {
-		t.Error(err)
+		t.FailNow()
 	}
 
-	if server != (Server{}) {
+	if server != nil {
 		t.Fail()
 	}
 
@@ -57,15 +58,21 @@ func TestNewBadIp(t *testing.T) {
 }
 
 func TestNewBadPort(t *testing.T) {
-	name := randomdata.Alphanumeric(10)
-	ip := randomdata.IpV4Address()
-	port := 0
-	server, err := New(name, ip, port)
-	if err == nil {
-		t.Error(err)
+	name := randomdata.Alphanumeric(randomdata.Number(1, 255))
+	ip := fake.IPv4()
+	var port int
+	if randomdata.Boolean() {
+		port = randomdata.Number(65536, 4294967295)
+	} else {
+		port = randomdata.Number(-4294967295, 0)
 	}
 
-	if server != (Server{}) {
+	server, err := New(name, ip, port)
+	if err == nil {
+		t.FailNow()
+	}
+
+	if server != nil {
 		t.Fail()
 	}
 
@@ -77,13 +84,18 @@ func TestNewBadPort(t *testing.T) {
 func TestNewBadNameIpPort(t *testing.T) {
 	name := randomdata.Alphanumeric(0)
 	ip := "1.1.1.1.1"
-	port := 65536
+	var port int
+	if randomdata.Boolean() {
+		port = randomdata.Number(65536, 4294967295)
+	} else {
+		port = randomdata.Number(-4294967295, 0)
+	}
 	server, err := New(name, ip, port)
 	if err == nil {
-		t.Error(err)
+		t.FailNow()
 	}
 
-	if server != (Server{}) {
+	if server != nil {
 		t.Fail()
 	}
 

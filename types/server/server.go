@@ -12,8 +12,8 @@ type Server struct {
 	Port int    `validate:"gt=0,lt=65536"`
 }
 
-func New(name string, ip string, port int) (Server, error) {
-	server := Server{
+func New(name string, ip string, port int) (*Server, error) {
+	server := &Server{
 		Name: name,
 		Ip:   ip,
 		Port: port,
@@ -21,13 +21,13 @@ func New(name string, ip string, port int) (Server, error) {
 
 	err := server.validate()
 	if err != nil {
-		return Server{}, err
+		return nil, err
 	}
 
 	return server, nil
 }
 
-func (server Server) validate() error {
+func (server *Server) validate() error {
 	validate := validator.New()
 	err := validate.Struct(server)
 	if err != nil {

@@ -19,12 +19,11 @@ func GetFileContent(repository string, path string, reference string, token stri
 	url := githubUrl + "/repos/" + repository + "/contents/" + path + "?ref=" + reference
 
 	headers["Accept"] = "application/vnd.github.v3.raw"
-	headers["Accept"] = "application/vnd.github.v3.raw"
 	if token != "" {
 		headers["Authorization"] = "token " + token
 	}
 
-	response, err := Request("GET", url, nil, headers)
+	response, err := request("GET", url, nil, headers)
 	if err != nil {
 		return "", err
 	}
@@ -38,7 +37,7 @@ func GetFileContent(repository string, path string, reference string, token stri
 	return buffer.String(), nil
 }
 
-func Request(method string, url string, body io.Reader, headers map[string]string) (*http.Response, error) {
+func request(method string, url string, body io.Reader, headers map[string]string) (*http.Response, error) {
 	var response *http.Response
 	client := http.Client{}
 

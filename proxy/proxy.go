@@ -7,8 +7,8 @@ import (
 	"github.com/philippe-vandermoere/docker-proxy-go/client/docker"
 	"github.com/philippe-vandermoere/docker-proxy-go/nginx"
 	"github.com/philippe-vandermoere/docker-proxy-go/types/certificate"
-	"github.com/philippe-vandermoere/docker-proxy-go/types/proxy"
-	"github.com/philippe-vandermoere/docker-proxy-go/types/server"
+	typeProxy "github.com/philippe-vandermoere/docker-proxy-go/types/proxy"
+	typeServer "github.com/philippe-vandermoere/docker-proxy-go/types/server"
 	log "github.com/sirupsen/logrus"
 	"regexp"
 	"strconv"
@@ -102,7 +102,7 @@ func list() (typeProxy.Collection, error) {
 				return proxyCollection, err
 			}
 
-			proxyCollection[domain] = proxyCollection[domain].AddServer(getPath(container), server)
+			proxyCollection[domain].AddServer(getPath(container), server)
 		}
 	}
 
@@ -118,8 +118,8 @@ func getPath(container typeDocker.Container) string {
 	}
 }
 
-func getServer(container typeDocker.Container) (typeServer.Server, error) {
-	var server typeServer.Server
+func getServer(container typeDocker.Container) (*typeServer.Server, error) {
+	var server *typeServer.Server
 	var ip string
 	port := defaultPort
 	labelPort, ok := container.Labels[dockerProxyLabelPort]
@@ -178,10 +178,10 @@ func applyConfig() error {
 	return nil
 }
 
-func getCertificate(domain string, container typeDocker.Container) typeCertificate.Certificate {
+func getCertificate(domain string, container typeDocker.Container) *typeCertificate.Certificate {
 	https, ok := container.Labels[dockerProxyLabelSsl]
 	if !ok || https != "True" {
-		return typeCertificate.Certificate{}
+		return nil
 	}
 
 	options := make(map[string]string)
@@ -192,10 +192,10 @@ func getCertificate(domain string, container typeDocker.Container) typeCertifica
 		}
 	}
 
-	certificate, err := certificate.GetCertificate(domain, options)
+	cert, err := certificate.GetCertificate(domain, options)
 	if err != nil {
-		return typeCertificate.Certificate{}
+		return nil
 	}
 
-	return certificate
+	return cert
 }

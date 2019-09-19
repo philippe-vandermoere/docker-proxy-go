@@ -7,12 +7,12 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
-	"github.com/philippe-vandermoere/docker-proxy-go/types/execute"
+	typeExecute "github.com/philippe-vandermoere/docker-proxy-go/types/execute"
 	log "github.com/sirupsen/logrus"
 	"strings"
 )
 
-func Client() (*client.Client, error) {
+func getClient() (*client.Client, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 
 	if err != nil {
@@ -42,12 +42,12 @@ func Container(id string) (types.Container, error) {
 }
 
 func ContainerList() ([]types.Container, error) {
-	client, err := Client()
+	dockerClient, err := getClient()
 	if err != nil {
 		return []types.Container{}, err
 	}
 
-	containers, err := client.ContainerList(context.Background(), types.ContainerListOptions{})
+	containers, err := dockerClient.ContainerList(context.Background(), types.ContainerListOptions{})
 
 	if err != nil {
 		return []types.Container{}, err
@@ -56,14 +56,13 @@ func ContainerList() ([]types.Container, error) {
 	return containers, nil
 }
 
-func ContainerExec(container types.Container, command []string) (typeExecute.Result, error) {
-	var executeResult typeExecute.Result
-	client, err := Client()
+func ContainerExec(container types.Container, command []string) (*typeExecute.Result, error) {
+	dockerClient, err := getClient()
 	if err != nil {
-		return executeResult, err
+		return nil, err
 	}
 
-	responseCreate, err := client.ContainerExecCreate(
+	responseCreate, err := dockerClient.ContainerExecCreate(
 		context.Background(),
 		container.ID,
 		types.ExecConfig{
@@ -76,44 +75,40 @@ func ContainerExec(container types.Container, command []string) (typeExecute.Res
 	)
 
 	if err != nil {
-		return executeResult, err
+		return nil, err
 	}
 
-	responseAttach, err := client.ContainerExecAttach(
+	responseAttach, err := dockerClient.ContainerExecAttach(
 		context.Background(),
 		responseCreate.ID,
 		types.ExecStartCheck{},
 	)
 
 	if err != nil {
-		return executeResult, err
+		return nil, err
 	}
 
 	var stdOutput, stdError bytes.Buffer
 	_, err = stdcopy.StdCopy(&stdOutput, &stdError, responseAttach.Reader)
 	if err != nil {
-		return executeResult, err
+		return nil, err
 	}
 
-	responseInspect, err := client.ContainerExecInspect(context.Background(), responseCreate.ID)
+	responseInspect, err := dockerClient.ContainerExecInspect(context.Background(), responseCreate.ID)
 	if err != nil {
-		return executeResult, err
+		return nil, err
 	}
 
-	executeResult.StdOutput = stdOutput.String()
-	executeResult.StdError = stdError.String()
-	executeResult.ExitCode = responseInspect.ExitCode
-
-	return executeResult, nil
+	return typeExecute.New(stdOutput.String(), stdError.String(), responseInspect.ExitCode)
 }
 
 func NetworkList() ([]types.NetworkResource, error) {
-	client, err := Client()
+	dockerClient, err := getClient()
 	if err != nil {
 		return []types.NetworkResource{}, err
 	}
 
-	networks, err := client.NetworkList(context.Background(), types.NetworkListOptions{})
+	networks, err := dockerClient.NetworkList(context.Background(), types.NetworkListOptions{})
 	if err != nil {
 		return []types.NetworkResource{}, err
 	}
@@ -128,12 +123,12 @@ func NetworkConnect(network types.NetworkResource, container types.Container) (t
 		}
 	}
 
-	client, err := Client()
+	dockerClient, err := getClient()
 	if err != nil {
 		return container, err
 	}
 
-	err = client.NetworkConnect(
+	err = dockerClient.NetworkConnect(
 		context.Background(),
 		network.ID, container.ID,
 		nil,

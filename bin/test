@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+
+set -e
+
+readonly CURRENT_DIRECTORY=$(pwd)
+readonly PROJECT_DIRECTORY=$(dirname $(realpath $0))/..
+
+cd ${PROJECT_DIRECTORY}
+go test ./... -coverprofile=coverage.txt -covermode=atomic
+cd ${CURRENT_DIRECTORY}

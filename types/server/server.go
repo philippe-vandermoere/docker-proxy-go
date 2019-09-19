@@ -1,4 +1,4 @@
-package typeServer
+package server
 
 import (
 	"errors"
@@ -8,26 +8,26 @@ import (
 
 type Server struct {
 	Name string `validate:"required"`
-	Ip   string `validate:"ip4_addr""`
-	Port int    `validate:"gt=0,lt=65535"`
+	Ip   string `validate:"ip4_addr"`
+	Port int    `validate:"gt=0,lt=65536"`
 }
 
-func New(name string, ip string, port int) (Server, error) {
-	server := Server{
+func New(name string, ip string, port int) (*Server, error) {
+	server := &Server{
 		Name: name,
 		Ip:   ip,
 		Port: port,
 	}
 
-	err := server.Validate()
+	err := server.validate()
 	if err != nil {
-		return Server{}, err
+		return nil, err
 	}
 
 	return server, nil
 }
 
-func (server Server) Validate() error {
+func (server *Server) validate() error {
 	validate := validator.New()
 	err := validate.Struct(server)
 	if err != nil {
@@ -40,8 +40,6 @@ func (server Server) Validate() error {
 				errorMessage += "Ip '" + server.Ip + "' is not valid.\n"
 			case "Port":
 				errorMessage += "Port '" + strconv.Itoa(server.Port) + "' must be between 1 and 65535.\n"
-			default:
-				errorMessage += err.StructField() + "\n"
 			}
 		}
 

@@ -11,23 +11,23 @@ import (
 )
 
 type Certificate struct {
-	Domain string
+	Domain string `validate:"hostname_rfc1123"`
 }
 
-func New(domain string) (Certificate, error) {
-	certificate := Certificate{
+func New(domain string) (*Certificate, error) {
+	certificate := &Certificate{
 		Domain: domain,
 	}
 
-	err := certificate.Validate()
+	err := certificate.validate()
 	if err != nil {
-		return Certificate{}, err
+		return nil, err
 	}
 
 	return certificate, nil
 }
 
-func (certificate Certificate) Validate() error {
+func (certificate *Certificate) validate() error {
 	validate := validator.New()
 	err := validate.Struct(certificate)
 	if err != nil {
@@ -36,8 +36,6 @@ func (certificate Certificate) Validate() error {
 			switch err.StructField() {
 			case "Domain":
 				errorMessage += "Domain '" + certificate.Domain + "' is not valid.\n"
-			default:
-				errorMessage += err.StructField() + "\n"
 			}
 		}
 
@@ -47,15 +45,15 @@ func (certificate Certificate) Validate() error {
 	return nil
 }
 
-func (certificate Certificate) GetFileName() string {
+func (certificate *Certificate) GetFileName() string {
 	return os.Getenv("CERTIFICATE_DIRECTORY") + "/" + certificate.Domain + "/" + "certificate.pem"
 }
 
-func (certificate Certificate) GetPrivateKeyFileName() string {
+func (certificate *Certificate) GetPrivateKeyFileName() string {
 	return os.Getenv("CERTIFICATE_DIRECTORY") + "/" + certificate.Domain + "/" + "privateKey.pem"
 }
 
-func (certificate Certificate) Write(certificateContent string, privateKeyContent string) error {
+func (certificate *Certificate) Write(certificateContent string, privateKeyContent string) error {
 	err := os.MkdirAll(os.Getenv("CERTIFICATE_DIRECTORY")+"/"+certificate.Domain, 755)
 	if err != nil {
 		return err
@@ -74,7 +72,7 @@ func (certificate Certificate) Write(certificateContent string, privateKeyConten
 	return nil
 }
 
-func (certificate Certificate) IsValid() error {
+func (certificate *Certificate) IsValid() error {
 	if _, err := os.Stat(certificate.GetFileName()); os.IsNotExist(err) {
 		return err
 	}

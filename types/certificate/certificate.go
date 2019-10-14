@@ -53,7 +53,20 @@ func (certificate *Certificate) GetPrivateKeyFileName() string {
 	return os.Getenv("CERTIFICATE_DIRECTORY") + "/" + certificate.Domain + "/" + "privateKey.pem"
 }
 
-func (certificate *Certificate) Write(certificateContent string, privateKeyContent string) error {
+func (certificate *Certificate) GetChainFileName() string {
+	return os.Getenv("CERTIFICATE_DIRECTORY") + "/" + certificate.Domain + "/" + "chain.pem"
+}
+
+func (certificate *Certificate) HasChain() bool {
+	info, err := os.Stat(certificate.GetChainFileName())
+	if os.IsNotExist(err) {
+		return false
+	}
+
+	return !info.IsDir()
+}
+
+func (certificate *Certificate) Write(certificateContent string, privateKeyContent string, certificateChainContent string) error {
 	err := os.MkdirAll(os.Getenv("CERTIFICATE_DIRECTORY")+"/"+certificate.Domain, 755)
 	if err != nil {
 		return err
@@ -67,6 +80,13 @@ func (certificate *Certificate) Write(certificateContent string, privateKeyConte
 	err = ioutil.WriteFile(certificate.GetPrivateKeyFileName(), []byte(privateKeyContent), 0644)
 	if err != nil {
 		return err
+	}
+
+	if certificateChainContent != "" {
+		err = ioutil.WriteFile(certificate.GetChainFileName(), []byte(certificateChainContent), 0644)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

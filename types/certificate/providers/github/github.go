@@ -8,24 +8,26 @@ import (
 )
 
 type Github struct {
-	Repository      string `validate:"required"`
-	CertificatePath string `validate:"required"`
-	PrivateKeyPath  string `validate:"required"`
-	Token           string
-	Reference       string
+	Repository           string `validate:"required"`
+	CertificatePath      string `validate:"required"`
+	PrivateKeyPath       string `validate:"required"`
+	CertificateChainPath string
+	Token                string
+	Reference            string
 }
 
-func New(repository string, certificatePath string, privateKeyPath string, token string, reference string) Github {
-	return Github{
-		Repository:      repository,
-		CertificatePath: certificatePath,
-		PrivateKeyPath:  privateKeyPath,
-		Reference:       reference,
-		Token:           token,
+func New(repository string, certificatePath string, privateKeyPath string, certificateChainPath string, token string, reference string) *Github {
+	return &Github{
+		Repository:           repository,
+		CertificatePath:      certificatePath,
+		PrivateKeyPath:       privateKeyPath,
+		CertificateChainPath: certificateChainPath,
+		Reference:            reference,
+		Token:                token,
 	}
 }
 
-func (github Github) Validate() error {
+func (github *Github) validate() error {
 	validate := validator.New()
 	err := validate.Struct(github)
 	if err != nil {
@@ -38,8 +40,6 @@ func (github Github) Validate() error {
 				errorMessage += "CertificatePath is required.\n"
 			case "PrivateKeyPath":
 				errorMessage += "PrivateKeyPath is required.\n"
-			default:
-				errorMessage += err.StructField() + "\n"
 			}
 		}
 
@@ -49,8 +49,8 @@ func (github Github) Validate() error {
 	return nil
 }
 
-func (github Github) CreateCertificate(certificate *typeCertificate.Certificate) error {
-	err := github.Validate()
+func (github *Github) CreateCertificate(certificate *typeCertificate.Certificate) error {
+	err := github.validate()
 	if err != nil {
 		return err
 	}
@@ -75,7 +75,20 @@ func (github Github) CreateCertificate(certificate *typeCertificate.Certificate)
 		return err
 	}
 
-	err = certificate.Write(certificateContent, privateKeyContent)
+	certificateChainContent := ""
+	if github.CertificateChainPath != "" {
+		certificateChainContent, err = clientGithub.GetFileContent(
+			github.Repository,
+			github.CertificateChainPath,
+			github.Reference,
+			github.Token,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = certificate.Write(certificateContent, privateKeyContent, certificateChainContent)
 	if err != nil {
 		return err
 	}
@@ -83,6 +96,6 @@ func (github Github) CreateCertificate(certificate *typeCertificate.Certificate)
 	return nil
 }
 
-func (github Github) GetName() string {
+func (github *Github) GetName() string {
 	return "Github"
 }

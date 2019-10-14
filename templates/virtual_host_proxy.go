@@ -24,10 +24,36 @@ server {
     listen [::]:443 ssl http2;
 
     server_name {{ .Domain }};
-	
-    include /etc/nginx/ssl.conf;
+
     ssl_certificate {{ .Certificate.GetFileName }};
     ssl_certificate_key {{ .Certificate.GetPrivateKeyFileName }};
+
+    # https://ssl-config.mozilla.org/#server=nginx&server-version=1.17.0&config=modern
+    ssl_certificate {{ .Certificate.GetFileName }};
+    ssl_certificate_key {{ .Certificate.GetPrivateKeyFileName }};
+{{- if .Certificate.HasChain }}
+    ssl_trusted_certificate {{ .Certificate.GetChainFileName }};
+
+    # OCSP stapling
+    ssl_stapling on;
+    ssl_stapling_verify on;
+{{- end }}
+
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_tickets off;
+
+    # modern configuration
+    ssl_protocols TLSv1.3;
+    ssl_prefer_server_ciphers off;
+
+    # HSTS (ngx_http_headers_module is required) (63072000 seconds)
+    add_header Strict-Transport-Security "max-age=63072000" always;
+
+    resolver 1.1.1.1 1.0.0.1 valid=300s;
+    resolver_timeout 5s;
+
+
 {{- end }}
 {{- range $path := .GetPaths }}
 

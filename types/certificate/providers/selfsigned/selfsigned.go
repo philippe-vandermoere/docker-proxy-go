@@ -15,11 +15,11 @@ import (
 type SelfSigned struct {
 }
 
-func New() SelfSigned {
-	return SelfSigned{}
+func New() *SelfSigned {
+	return &SelfSigned{}
 }
 
-func (selfSigned SelfSigned) CreateCertificate(certificate *typeCertificate.Certificate) error {
+func (selfSigned *SelfSigned) CreateCertificate(certificate *typeCertificate.Certificate) error {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
 		return err
@@ -53,7 +53,7 @@ func (selfSigned SelfSigned) CreateCertificate(certificate *typeCertificate.Cert
 		return err
 	}
 
-	err = certificate.Write(certificateContent.String(), privateKeyContent.String())
+	err = certificate.Write(certificateContent.String(), privateKeyContent.String(), "")
 	if err != nil {
 		return err
 	}
@@ -61,6 +61,6 @@ func (selfSigned SelfSigned) CreateCertificate(certificate *typeCertificate.Cert
 	return nil
 }
 
-func (selfSigned SelfSigned) GetName() string {
-	return "SelfSigned"
+func (selfSigned *SelfSigned) GetName() string {
+	return "self-signed"
 }

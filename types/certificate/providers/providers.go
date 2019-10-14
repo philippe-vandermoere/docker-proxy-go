@@ -18,6 +18,7 @@ func GetProvider(options map[string]string) Provider {
 			options["repository"],
 			options["certificate_path"],
 			options["private_key_path"],
+			options["certificate_chain_path"],
 			options["token"],
 			options["reference"],
 		)

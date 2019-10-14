@@ -16,7 +16,7 @@ func getClient() (*client.Client, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 
 	if err != nil {
-		return cli, err
+		return nil, err
 	}
 
 	cli.NegotiateAPIVersion(context.Background())

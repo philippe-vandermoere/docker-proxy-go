@@ -2,7 +2,7 @@ version: '2.1'
 executors:
     golang:
         docker:
-            - image: golang:1.12.9-alpine
+            - image: golang:1.13.1-alpine
 
 jobs:
     lint:

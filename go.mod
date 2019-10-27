@@ -1,6 +1,6 @@
 module github.com/philippe-vandermoere/docker-proxy-go
 
-go 1.13.1
+go 1.13.3
 
 require (
 	github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 // indirect

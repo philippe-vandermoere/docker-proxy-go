@@ -10,6 +10,16 @@ RUN set -xe; \
 
 FROM alpine:3.10
 
+ARG BUILD_DATE
+ARG VCS_REF
+
+LABEL maintainer="Philippe VANDERMOERE <philippe@wizacha.com" \
+    org.label-schema.build-date=${BUILD_DATE} \
+    org.label-schema.name="docker-proxy-go" \
+    org.label-schema.vcs-ref=${VCS_REF} \
+    org.label-schema.vcs-url="https://github.com/philippe-vandermoere/docker-proxy-go" \
+    org.label-schema.schema-version="1.0.0"
+
 RUN apk add --no-cache ca-certificates
 
 WORKDIR /app
